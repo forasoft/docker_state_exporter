@@ -1,4 +1,8 @@
 
+# Info
+
+This project is a fork of [karugaru/docker_state_exporter](https://github.com/karugaru/docker_state_exporter) with updated go docker library. Below is the original README.
+
 # Notice
 
 I don't maintain this repository very well, so please fork and use this.

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
-	tcontainer "github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/client_golang/prometheus"
@@ -134,17 +134,17 @@ func (c *dockerHealthCollector) collectMetrics(ch chan<- prometheus.Metric) {
 }
 
 func (c *dockerHealthCollector) collectContainer() {
-	containers, err := c.containerClient.ContainerList(context.Background(), types.ContainerListOptions{All: true})
+	containers, err := c.containerClient.ContainerList(context.Background(), container.ListOptions{All: true})
 	errCheck(err)
 	c.containerInfoCache = []types.ContainerJSON{}
 
-	for _, container := range containers {
-		info, err := c.containerClient.ContainerInspect(context.Background(), container.ID)
+	for _, cont := range containers {
+		info, err := c.containerClient.ContainerInspect(context.Background(), cont.ID)
 		errCheck(err)
 		c.containerInfoCache = append(c.containerInfoCache, info)
 
 		if info.Config == nil {
-			info.Config = &tcontainer.Config{Labels: map[string]string{}}
+			info.Config = &container.Config{Labels: map[string]string{}}
 		}
 
 		if info.State.Health == nil {
@@ -190,15 +190,15 @@ func init() {
 func main() {
 	flag.Parse()
 
-	client, err := client.NewEnvClient()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	errCheck(err)
-	defer client.Close()
+	defer cli.Close()
 
-	_, err = client.Ping(context.Background())
+	_, err = cli.Ping(context.Background())
 	errCheck(err)
 
 	prometheus.MustRegister(&dockerHealthCollector{
-		containerClient: client,
+		containerClient: cli,
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

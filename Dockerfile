@@ -1,8 +1,9 @@
 FROM golang:alpine as builder
 RUN apk update && apk add git && apk add ca-certificates
-COPY *.go $GOPATH/src/mypackage/myapp/
-WORKDIR $GOPATH/src/mypackage/myapp/
-RUN go mod init && go mod tidy
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download
+COPY *.go ./
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/docker_state_exporter
 
 FROM alpine:3

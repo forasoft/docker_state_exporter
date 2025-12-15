@@ -11,5 +11,7 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Binary for docker state exporter
+docker_state_exporter
 # Dependency directories (remove the comment below to include it)
 # vendor/
